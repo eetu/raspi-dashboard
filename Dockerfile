@@ -8,14 +8,15 @@ FROM --platform=$BUILDPLATFORM node:26-alpine AS frontend-build
 ARG RASPI_DASHBOARD_IMAGE_TAG
 ENV VITE_RASPI_DASHBOARD_IMAGE_TAG=$RASPI_DASHBOARD_IMAGE_TAG
 WORKDIR /app
-COPY frontend/package.json frontend/yarn.lock frontend/.yarnrc.yml* ./
-# node 25+ no longer bundles corepack, so install it before enabling (the
-# packageManager field then pins the right yarn).
-RUN npm install -g corepack@latest && corepack enable \
-    && yarn install --immutable --network-timeout 1000000
+COPY frontend/package.json frontend/yarn.lock frontend/.yarnrc.yml ./
+COPY frontend/.yarn/releases ./.yarn/releases
+# Yarn is vendored (.yarn/releases/*.cjs + yarnPath in .yarnrc.yml) and invoked
+# via node — no corepack, so the build is independent of the node version
+# (node 25+ dropped the bundled corepack; vendoring sidesteps that entirely).
+RUN node .yarn/releases/yarn-*.cjs install --immutable --network-timeout 1000000
 COPY frontend/ .
 # adapter-static is configured to emit to ./dist (see svelte.config.js).
-RUN yarn build
+RUN node .yarn/releases/yarn-*.cjs build
 
 # --- Stage 2: Build workspace dependencies (cross-compiled, cached) ---
 FROM --platform=$BUILDPLATFORM rust:1-alpine AS workspace-deps
