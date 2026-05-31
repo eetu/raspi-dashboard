@@ -17,13 +17,18 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: "24"
-      - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn lint
-      - run: yarn format
-      - run: yarn typecheck
-      - run: yarn build
+          node-version-file: frontend/.node-version
+      # Yarn is vendored (.yarn/releases/*.cjs) and invoked via node — no
+      # corepack (node 25+ dropped the bundle), so this is node-version-agnostic
+      # and stays in step with the Dockerfile's node 26 build stage.
+      - name: Frontend checks
+        run: |
+          yarn() { node .yarn/releases/yarn-*.cjs "$@"; }
+          yarn install --immutable
+          yarn lint
+          yarn format
+          yarn typecheck
+          yarn build
 
   backend:
     name: "Backend (Rust workspace)"
