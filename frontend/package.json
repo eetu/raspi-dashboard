@@ -21,15 +21,12 @@
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@types/node": "^25",
 		"eslint": "^10.4.0",
-		"eslint-config": "github:eetu/eslint-config#v2.0.2",
-		"eslint-plugin-svelte": "^3.12.4",
-		"globals": "^16.5.0",
+		"eslint-config": "github:eetu/eslint-config#v2.1.0",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.4.0",
 		"svelte": "^5.55.2",
 		"svelte-check": "^4.4.6",
 		"typescript": "^6.0.2",
-		"typescript-eslint": "^8.59.4",
 		"vite": "^8.0.7"
 	},
 	"packageManager": "yarn@4.9.1"

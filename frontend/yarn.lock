@@ -86,7 +86,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint-react/eslint-plugin@npm:^5.8.3":
+"@eslint-react/eslint-plugin@npm:^5.8.6":
   version: 5.8.8
   resolution: "@eslint-react/eslint-plugin@npm:5.8.8"
   dependencies:
@@ -917,23 +917,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config@github:eetu/eslint-config#v2.0.2":
-  version: 2.0.0
-  resolution: "eslint-config@https://github.com/eetu/eslint-config.git#commit=889aae0dd90679593353db50801d760abb8b91fe"
+"eslint-config@github:eetu/eslint-config#v2.1.0":
+  version: 2.1.0
+  resolution: "eslint-config@https://github.com/eetu/eslint-config.git#commit=ff540d1b45f041497bde9f171d7a549153c56322"
   dependencies:
-    "@eslint-react/eslint-plugin": "npm:^5.8.3"
+    "@eslint-react/eslint-plugin": "npm:^5.8.6"
     "@eslint/js": "npm:^10.0.1"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-react-refresh: "npm:^0.5.2"
     eslint-plugin-simple-import-sort: "npm:^13.0.0"
+    eslint-plugin-svelte: "npm:^3.12.4"
     eslint-plugin-unused-imports: "npm:^4.4.1"
-    typescript-eslint: "npm:^8.59.4"
+    globals: "npm:^16.5.0"
+    typescript-eslint: "npm:^8.60.0"
   peerDependencies:
     eslint: ">= 9"
+    svelte: ">= 5"
   peerDependenciesMeta:
+    svelte:
+      optional: true
     typescript:
       optional: true
-  checksum: 10/d2c5aa990be05a0306f833e9af8eb2e42b84a5ea7106ca6374f376f27eb430973240af97b0aa22d5aea2c885d4b9693b0c0bab654aa61dec14d476a9e8645573
+  checksum: 10/79777a4082417427ed48bf5a48e922ed0866882fbd11f8cee0eecb881a12fc94e4bdad7a0b4a8ddab6819dc4c700e884dbc7de3f0ab350ca22e9f5ff7476b71f
   languageName: node
   linkType: hard
 
@@ -1923,15 +1928,12 @@ __metadata:
     "@sveltejs/vite-plugin-svelte": "npm:^7.0.0"
     "@types/node": "npm:^25"
     eslint: "npm:^10.4.0"
-    eslint-config: "github:eetu/eslint-config#v2.0.2"
-    eslint-plugin-svelte: "npm:^3.12.4"
-    globals: "npm:^16.5.0"
+    eslint-config: "github:eetu/eslint-config#v2.1.0"
     prettier: "npm:^3.8.3"
     prettier-plugin-svelte: "npm:^3.4.0"
     svelte: "npm:^5.55.2"
     svelte-check: "npm:^4.4.6"
     typescript: "npm:^6.0.2"
-    typescript-eslint: "npm:^8.59.4"
     vite: "npm:^8.0.7"
   languageName: unknown
   linkType: soft
@@ -2191,7 +2193,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.59.4":
+"typescript-eslint@npm:^8.60.0":
   version: 8.60.0
   resolution: "typescript-eslint@npm:8.60.0"
   dependencies:
