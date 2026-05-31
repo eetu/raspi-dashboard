@@ -71,3 +71,11 @@ body {
 * {
 	box-sizing: border-box;
 }
+
+.halo-card {
+	background: var(--halo-bg-main);
+	border: 1px solid var(--halo-border);
+	border-radius: var(--halo-radius);
+	padding: var(--halo-card-padding);
+	box-shadow: var(--halo-shadow);
+}
