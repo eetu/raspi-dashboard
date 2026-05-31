@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api, type MetricsResponse } from '$lib/api';
+	import { api, type MetricsResponse, type SystemMetrics } from '$lib/api';
 	import { createResource } from '$lib/resource.svelte';
 
 	import Panel from './Panel.svelte';
@@ -11,18 +11,67 @@
 		return res.stop;
 	});
 
-	// beszel's `info` keys are version-specific and not guaranteed — render every
-	// primitive entry as a labelled stat rather than hard-coding a schema. Numbers
-	// are rounded; the raw key is shown so it's legible even before we pin the map.
-	function stats(info: Record<string, unknown> | null): [string, string][] {
-		if (!info) return [];
-		return Object.entries(info)
-			.filter(([, v]) => typeof v === 'number' || typeof v === 'string')
-			.map(([k, v]) => [k, typeof v === 'number' ? round(v) : String(v)]);
+	// beszel's `info` blob uses terse keys (its SystemInfo struct). Map the
+	// human-useful ones to labels + units; everything else (deprecated fields,
+	// internal enums like connection type) is dropped rather than shown raw.
+	type Stat = { label: string; value: string };
+
+	const asNum = (v: unknown): number | null => (typeof v === 'number' ? v : null);
+	const pct = (v: unknown): string | null => {
+		const n = asNum(v);
+		return n === null ? null : `${n.toFixed(1)}%`;
+	};
+
+	function bytesPerSec(v: unknown): string | null {
+		const n = asNum(v);
+		if (n === null) return null;
+		if (n < 1024) return `${n} B/s`;
+		if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB/s`;
+		return `${(n / (1024 * 1024)).toFixed(1)} MB/s`;
 	}
 
-	function round(n: number): string {
-		return Number.isInteger(n) ? String(n) : n.toFixed(1);
+	function uptime(v: unknown): string | null {
+		const s = asNum(v);
+		if (s === null) return null;
+		const d = Math.floor(s / 86400);
+		const h = Math.floor((s % 86400) / 3600);
+		const m = Math.floor((s % 3600) / 60);
+		return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m}m` : `${m}m`;
+	}
+
+	// Ordered: the fields worth a glance first.
+	const FIELDS: { key: string; label: string; fmt: (v: unknown) => string | null }[] = [
+		{ key: 'cpu', label: 'CPU', fmt: pct },
+		{ key: 'mp', label: 'Memory', fmt: pct },
+		{ key: 'dp', label: 'Disk', fmt: pct },
+		{ key: 'g', label: 'GPU', fmt: pct },
+		{
+			key: 'dt',
+			label: 'Temp',
+			fmt: (v) => (asNum(v) === null ? null : `${asNum(v)!.toFixed(1)} °C`)
+		},
+		{ key: 'bb', label: 'Network', fmt: bytesPerSec },
+		{ key: 'u', label: 'Uptime', fmt: uptime },
+		{ key: 't', label: 'Threads', fmt: (v) => (asNum(v) === null ? null : String(asNum(v))) },
+		{
+			key: 'la',
+			label: 'Load',
+			fmt: (v) =>
+				Array.isArray(v)
+					? v.map((n) => (typeof n === 'number' ? n.toFixed(2) : '?')).join(' / ')
+					: null
+		},
+		{ key: 'v', label: 'Agent', fmt: (v) => (typeof v === 'string' ? `v${v}` : null) }
+	];
+
+	function stats(sys: SystemMetrics): Stat[] {
+		const info = sys.info ?? {};
+		const out: Stat[] = [];
+		for (const f of FIELDS) {
+			const value = f.fmt(info[f.key]);
+			if (value !== null && value !== '') out.push({ label: f.label, value });
+		}
+		return out;
 	}
 </script>
 
@@ -39,11 +88,14 @@
 							<span class="sysname">{sys.name}</span>
 							{#if sys.host}<span class="host">{sys.host}</span>{/if}
 						</div>
-						<div class="chips">
-							{#each stats(sys.info) as [k, v] (k)}
-								<span class="chip"><b>{k}</b>{v}</span>
+						<dl class="grid">
+							{#each stats(sys) as stat (stat.label)}
+								<div class="stat">
+									<dt>{stat.label}</dt>
+									<dd>{stat.value}</dd>
+								</div>
 							{/each}
-						</div>
+						</dl>
 					</div>
 				{/each}
 			</div>
@@ -67,7 +119,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.75rem;
 	}
 	.dot {
 		width: 0.7rem;
@@ -86,23 +138,27 @@
 		color: var(--halo-text-muted);
 		font-size: 0.85em;
 	}
-	.chips {
+	.grid {
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+		gap: 0.6rem 0.8rem;
+	}
+	.stat {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
+		flex-direction: column;
+		gap: 0.1rem;
 	}
-	.chip {
-		display: inline-flex;
-		gap: 0.35em;
-		padding: 0.2rem 0.5rem;
-		background: var(--halo-accent-soft);
-		border-radius: var(--halo-radius-pill);
-		font-size: 0.8em;
-		font-variant-numeric: tabular-nums;
-	}
-	.chip b {
+	dt {
 		color: var(--halo-text-muted);
-		font-weight: 500;
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	dd {
+		margin: 0;
+		font-variant-numeric: tabular-nums;
+		font-size: 0.95rem;
 	}
 	.muted {
 		color: var(--halo-text-muted);
