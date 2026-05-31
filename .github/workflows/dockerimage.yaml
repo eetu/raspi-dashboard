@@ -33,6 +33,7 @@ jobs:
               - 'Cargo.toml'
               - 'Cargo.lock'
               - 'Dockerfile'
+              - '.dockerignore'
               - '.github/workflows/dockerimage.yaml'
 
       - name: Decide whether to build
