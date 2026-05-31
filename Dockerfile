@@ -4,7 +4,7 @@
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 
 # --- Stage 1: Build frontend (native, output is platform-independent) ---
-FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-build
+FROM --platform=$BUILDPLATFORM node:26-alpine AS frontend-build
 ARG RASPI_DASHBOARD_IMAGE_TAG
 ENV VITE_RASPI_DASHBOARD_IMAGE_TAG=$RASPI_DASHBOARD_IMAGE_TAG
 WORKDIR /app
