@@ -57,6 +57,32 @@ cd frontend; and yarn validate                      # typecheck + lint + format
 
 `./install-hooks.sh` wires the pre-commit clippy/lint gate.
 
+## Static assets (icons / PWA)
+
+`frontend/static/` is served at the web root (adapter-static copies it into
+`dist/`). Favicon, touch-device icon, and the web manifest live here so the app
+installs cleanly to an iOS/Android home screen.
+
+**Sources of truth** (hand-edited SVGs — the raspi glyph on an opaque bg):
+
+- `favicon.svg` — full-bleed glyph; the SVG favicon + the raster source for the
+  any-purpose / apple-touch icons.
+- `icon-maskable.svg` — same glyph shrunk into the maskable safe zone (~60%
+  centre) so Android's adaptive mask can't clip it.
+
+**Generated PNGs** (committed, so the build needs no rasterizer) — regenerate
+after editing a source SVG:
+
+```fish
+cd frontend; and ./scripts/gen-icons.sh   # needs librsvg: brew install librsvg
+```
+
+That writes `apple-touch-icon.png` (180), `icon-192/512.png` (any),
+`icon-192/512-maskable.png` (maskable), and `favicon-32.png`. The
+`<link>`/`<meta>` wiring (apple-touch-icon, manifest, theme-color,
+`*-web-app-capable`, title) lives in `frontend/src/app.html`; the icon list +
+colors in `frontend/static/manifest.webmanifest`.
+
 ## Deploy
 
 Built + pushed by CI on a push to `main` (`ghcr.io/eetu/raspi-dashboard:main`).

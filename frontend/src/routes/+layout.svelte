@@ -3,7 +3,6 @@
 
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import favicon from '$lib/assets/favicon.svg';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 
 	let { children } = $props();
@@ -15,7 +14,6 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
 	<title>raspi-dashboard</title>
 </svelte:head>
 
