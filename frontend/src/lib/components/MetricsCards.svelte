@@ -11,68 +11,55 @@
 		return res.stop;
 	});
 
-	// beszel's `info` blob uses terse keys (its SystemInfo struct). Map the
-	// human-useful ones to labels + units; everything else (deprecated fields,
-	// internal enums like connection type) is dropped rather than shown raw.
-	type Stat = { label: string; value: string };
-
+	// beszel's `info` blob uses terse keys (its SystemInfo struct). We surface the
+	// human-useful ones as table columns; deprecated/internal keys (h/k/c/m/p/b,
+	// ct connection-type enum) are ignored.
 	const asNum = (v: unknown): number | null => (typeof v === 'number' ? v : null);
-	const pct = (v: unknown): string | null => {
-		const n = asNum(v);
-		return n === null ? null : `${n.toFixed(1)}%`;
-	};
 
-	function bytesPerSec(v: unknown): string | null {
+	function load(v: unknown): string | null {
+		return Array.isArray(v)
+			? v.map((n) => (typeof n === 'number' ? n.toFixed(2) : '?')).join(' ')
+			: null;
+	}
+	function net(v: unknown): string | null {
 		const n = asNum(v);
 		if (n === null) return null;
 		if (n < 1024) return `${n} B/s`;
 		if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB/s`;
 		return `${(n / (1024 * 1024)).toFixed(1)} MB/s`;
 	}
-
+	function temp(v: unknown): string | null {
+		const n = asNum(v);
+		return n === null ? null : `${n.toFixed(1)} °C`;
+	}
 	function uptime(v: unknown): string | null {
 		const s = asNum(v);
 		if (s === null) return null;
 		const d = Math.floor(s / 86400);
 		const h = Math.floor((s % 86400) / 3600);
-		const m = Math.floor((s % 3600) / 60);
-		return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m}m` : `${m}m`;
+		return d > 0 ? `${d} days` : `${h}h ${Math.floor((s % 3600) / 60)}m`;
+	}
+	function agent(v: unknown): string | null {
+		return typeof v === 'string' ? `v${v}` : null;
 	}
 
-	// Ordered: the fields worth a glance first.
-	const FIELDS: { key: string; label: string; fmt: (v: unknown) => string | null }[] = [
-		{ key: 'cpu', label: 'CPU', fmt: pct },
-		{ key: 'mp', label: 'Memory', fmt: pct },
-		{ key: 'dp', label: 'Disk', fmt: pct },
-		{ key: 'g', label: 'GPU', fmt: pct },
-		{
-			key: 'dt',
-			label: 'Temp',
-			fmt: (v) => (asNum(v) === null ? null : `${asNum(v)!.toFixed(1)} °C`)
-		},
-		{ key: 'bb', label: 'Network', fmt: bytesPerSec },
+	// Percent columns render value + a mini bar; text columns just format a value.
+	const PCT_COLS = [
+		{ key: 'cpu', label: 'CPU' },
+		{ key: 'mp', label: 'Memory' },
+		{ key: 'dp', label: 'Disk' },
+		{ key: 'g', label: 'GPU' }
+	] as const;
+	const TEXT_COLS: { key: string; label: string; fmt: (v: unknown) => string | null }[] = [
+		{ key: 'la', label: 'Load', fmt: load },
+		{ key: 'bb', label: 'Net', fmt: net },
+		{ key: 'dt', label: 'Temp', fmt: temp },
 		{ key: 'u', label: 'Uptime', fmt: uptime },
-		{ key: 't', label: 'Threads', fmt: (v) => (asNum(v) === null ? null : String(asNum(v))) },
-		{
-			key: 'la',
-			label: 'Load',
-			fmt: (v) =>
-				Array.isArray(v)
-					? v.map((n) => (typeof n === 'number' ? n.toFixed(2) : '?')).join(' / ')
-					: null
-		},
-		{ key: 'v', label: 'Agent', fmt: (v) => (typeof v === 'string' ? `v${v}` : null) }
+		{ key: 'v', label: 'Agent', fmt: agent }
 	];
 
-	function stats(sys: SystemMetrics): Stat[] {
-		const info = sys.info ?? {};
-		const out: Stat[] = [];
-		for (const f of FIELDS) {
-			const value = f.fmt(info[f.key]);
-			if (value !== null && value !== '') out.push({ label: f.label, value });
-		}
-		return out;
-	}
+	const info = (s: SystemMetrics) => s.info ?? {};
+	const pctOf = (s: SystemMetrics, key: string) => asNum(info(s)[key]);
 </script>
 
 <Panel title="Host & container metrics" loading={res.loading && !res.data} error={res.error}>
@@ -80,50 +67,85 @@
 		{#if res.data.systems.length === 0}
 			<p class="muted">No systems reported.</p>
 		{:else}
-			<div class="systems">
-				{#each res.data.systems as sys (sys.name)}
-					<div class="system">
-						<div class="head">
-							<span class="dot" class:up={sys.status === 'up'}></span>
-							<span class="sysname">{sys.name}</span>
-							{#if sys.host}<span class="host">{sys.host}</span>{/if}
-						</div>
-						<dl class="grid">
-							{#each stats(sys) as stat (stat.label)}
-								<div class="stat">
-									<dt>{stat.label}</dt>
-									<dd>{stat.value}</dd>
-								</div>
-							{/each}
-						</dl>
-					</div>
-				{/each}
+			<div class="scroll">
+				<table>
+					<thead>
+						<tr>
+							<th class="sys">System</th>
+							{#each PCT_COLS as col (col.key)}<th>{col.label}</th>{/each}
+							{#each TEXT_COLS as col (col.key)}<th>{col.label}</th>{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each res.data.systems as sys (sys.name)}
+							<tr>
+								<td class="sys">
+									<span class="dot" class:up={sys.status === 'up'}></span>
+									<span class="name">{sys.name}</span>
+								</td>
+								{#each PCT_COLS as col (col.key)}
+									{@const n = pctOf(sys, col.key)}
+									<td>
+										{#if n !== null}
+											<div class="pct">
+												<span class="val">{n.toFixed(1)}%</span>
+												<span class="bar"
+													><span style="width:{Math.max(0, Math.min(100, n))}%"></span></span
+												>
+											</div>
+										{/if}
+									</td>
+								{/each}
+								{#each TEXT_COLS as col (col.key)}
+									{@const v = col.fmt(info(sys)[col.key])}
+									<td class="num">{v ?? ''}</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
 			</div>
 		{/if}
 	{/if}
 </Panel>
 
 <style>
-	.systems {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
+	.scroll {
+		overflow-x: auto;
 	}
-	.system {
-		background: var(--halo-bg-light);
-		border: 1px solid var(--halo-border);
-		border-radius: var(--halo-radius);
-		padding: 0.8rem;
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.85rem;
 	}
-	.head {
+	th {
+		text-align: left;
+		font-weight: 500;
+		color: var(--halo-text-muted);
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		padding: 0 0.6rem 0.5rem;
+		white-space: nowrap;
+	}
+	td {
+		padding: 0.6rem 0.6rem;
+		border-top: 1px solid var(--halo-border);
+		white-space: nowrap;
+		vertical-align: middle;
+	}
+	.sys {
+		padding-left: 0;
+	}
+	td.sys {
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
-		margin-bottom: 0.75rem;
+		gap: 0.5rem;
+		font-weight: 600;
 	}
 	.dot {
-		width: 0.7rem;
-		height: 0.7rem;
+		width: 0.6rem;
+		height: 0.6rem;
 		border-radius: 50%;
 		background: var(--halo-disconnected);
 		flex: none;
@@ -131,34 +153,31 @@
 	.dot.up {
 		background: var(--halo-connected);
 	}
-	.sysname {
-		font-weight: 600;
-	}
-	.host {
-		color: var(--halo-text-muted);
-		font-size: 0.85em;
-	}
-	.grid {
-		margin: 0;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-		gap: 0.6rem 0.8rem;
-	}
-	.stat {
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-	}
-	dt {
-		color: var(--halo-text-muted);
-		font-size: 0.72rem;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-	dd {
-		margin: 0;
+	.num {
 		font-variant-numeric: tabular-nums;
-		font-size: 0.95rem;
+	}
+	.pct {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.val {
+		min-width: 3.2em;
+	}
+	.bar {
+		display: inline-block;
+		width: 3.5rem;
+		height: 0.45rem;
+		border-radius: var(--halo-radius-pill);
+		background: var(--halo-off-bg);
+		overflow: hidden;
+		flex: none;
+	}
+	.bar span {
+		display: block;
+		height: 100%;
+		background: var(--halo-accent);
 	}
 	.muted {
 		color: var(--halo-text-muted);
