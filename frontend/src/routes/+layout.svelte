@@ -38,7 +38,7 @@
 
 <style>
 	.shell {
-		max-width: 880px;
+		max-width: 1200px;
 		margin: 0 auto;
 		padding: 2rem 1.25rem 4rem;
 		display: flex;
