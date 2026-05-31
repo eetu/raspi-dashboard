@@ -28,9 +28,11 @@ secret of its own**.
 ## Upstream credentials
 
 - **gatus**: unauthenticated loopback REST API (`127.0.0.1:3001`) — no creds.
-- **beszel**: a **dedicated read-only PocketBase user**, creds from
-  `/etc/secrets/raspi-dashboard.env` (written by `../raspi/tasks/secrets.py` from
-  the `raspi-dashboard` Bitwarden item). Loaded from env only, **never logged**;
+- **beszel**: a **dedicated read-only PocketBase user** (role `readonly`),
+  declared in `../raspi` `BESZEL["users"]`. The deploy generates its password,
+  stores it on the `beszel` Bitwarden item, creates the PB user + assigns it to
+  systems, and writes `/etc/secrets/raspi-dashboard.env`. Loaded from env only,
+  **never logged**;
   the auth-error path reports the HTTP status, not the response body (which can
   echo the identity). The token is cached in memory and re-minted on a 401.
   Creds absent → `/api/metrics` reports unavailable; the app still serves.

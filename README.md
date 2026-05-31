@@ -61,6 +61,8 @@ cd frontend; and yarn validate                      # typecheck + lint + format
 
 Built + pushed by CI on a push to `main` (`ghcr.io/eetu/raspi-dashboard:main`).
 Wired into the Pi by `../raspi` (`RASPI_DASHBOARD` dict in `group_data/all.py`,
-`tasks/raspi_dashboard.py`). Create the `raspi-dashboard` Bitwarden item (a
-read-only beszel user's login) before deploy, then `uv run pyinfra inventory.py
-deploy.py`. Lands at `https://dashboard.{domain}`.
+`tasks/raspi_dashboard.py`). The read-only beszel user is declared in
+`BESZEL["users"]` (role `readonly`) — the deploy generates its password, stores
+it on the `beszel` Bitwarden item, creates the PocketBase user + assigns systems,
+and writes the app's env. No manual Bitwarden step. Then `uv run pyinfra
+inventory.py deploy.py`. Lands at `https://dashboard.{domain}`.

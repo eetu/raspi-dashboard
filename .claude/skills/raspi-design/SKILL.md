@@ -25,11 +25,17 @@ Text: **`raspidash`** (one word, lowercase) — `raspi` in `--halo-text-main`,
 
 ## 3. Layout
 
-Single scrolling column, `max-width: 880px`, centered. Three stacked
-`.halo-card` panels in fixed order: **service health → host/container metrics →
-CVE scan**. Each panel is a `Panel.svelte` card with a heading and an optional
-right-aligned action (e.g. CVE's "Scan now" button — the one accent-filled
-button on the page). Status uses dots: `--halo-connected` (up) /
+`max-width: 880px`, centered. Persistent header (wordmark + tagline) and a tab
+bar live in `+layout.svelte`; tabs are real routes so refresh/deep-link work:
+
+- **Dashboard** (`/`) — service health grid + host/container metrics.
+- **CVE** (`/cve`) — the scan panel.
+
+The active tab is underlined in `--halo-accent` (compare `page.url.pathname`
+from `$app/state`; build hrefs with `resolve()` from `$app/paths`). Within a tab,
+content is stacked `.halo-card` panels — each a `Panel.svelte` card with a
+heading and an optional right-aligned action (e.g. CVE's "Scan now" — the one
+accent-filled button). Status uses dots: `--halo-connected` (up) /
 `--halo-disconnected` (down); severity uses `--halo-disconnected` (critical) and
 `--halo-accent` (high).
 
