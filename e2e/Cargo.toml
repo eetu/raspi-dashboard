@@ -1,0 +1,16 @@
+[package]
+name = "raspi-dashboard-e2e"
+version.workspace = true
+edition.workspace = true
+
+# Test-only crate: a `Stack` harness (src/lib.rs) that spawns the real backend
+# binary against wiremock'd upstreams, plus the tests in tests/ that drive it.
+# Not built into any image (the Dockerfile only stubs its manifest).
+
+[dependencies]
+tokio = { workspace = true }
+reqwest = { workspace = true }
+serde_json = { workspace = true }
+wiremock = { workspace = true }
+tempfile = { workspace = true }
+anyhow = { workspace = true }

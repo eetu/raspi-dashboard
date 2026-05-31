@@ -1,0 +1,14 @@
+target/
+**/node_modules/
+**/dist/
+**/.svelte-kit/
+.git/
+.github/
+.githooks/
+*.log
+.DS_Store
+.env
+.env.local
+e2e/
+README.md
+SECURITY.md

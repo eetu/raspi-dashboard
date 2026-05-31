@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: "Frontend (Svelte)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: yarn lint
+      - run: yarn format
+      - run: yarn typecheck
+      - run: yarn build
+
+  backend:
+    name: "Backend (Rust workspace)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "."
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - run: cargo build --workspace --release
+
+  e2e:
+    name: "E2E smoke (stack boots + talks)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "."
+      # The harness (raspi-dashboard-e2e) boots the backend with DEV_AUTH +
+      # wiremock'd gatus/beszel + a tempfile trivy report, then drives the
+      # /status fan-out and each /api route. #[ignore] so the backend job's
+      # `cargo test --workspace` skips it; here we build the binary, then run
+      # it explicitly.
+      - run: cargo build -p raspi-dashboard-backend
+      - run: cargo test -p raspi-dashboard-e2e -- --ignored --nocapture
