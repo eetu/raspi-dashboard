@@ -9,7 +9,10 @@ ARG RASPI_DASHBOARD_IMAGE_TAG
 ENV VITE_RASPI_DASHBOARD_IMAGE_TAG=$RASPI_DASHBOARD_IMAGE_TAG
 WORKDIR /app
 COPY frontend/package.json frontend/yarn.lock frontend/.yarnrc.yml* ./
-RUN corepack enable && yarn install --immutable --network-timeout 1000000
+# node 25+ no longer bundles corepack, so install it before enabling (the
+# packageManager field then pins the right yarn).
+RUN npm install -g corepack@latest && corepack enable \
+    && yarn install --immutable --network-timeout 1000000
 COPY frontend/ .
 # adapter-static is configured to emit to ./dist (see svelte.config.js).
 RUN yarn build
