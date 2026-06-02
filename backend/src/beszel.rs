@@ -31,6 +31,8 @@ struct RecordList {
 /// passed through untouched; the typed fields are best-effort extractions.
 #[derive(Debug, Serialize)]
 pub struct SystemMetrics {
+    /// PocketBase record id — the key beszel's UI uses in its /system/{id} route.
+    pub id: String,
     pub name: String,
     pub status: String,
     pub host: Option<String>,
@@ -40,6 +42,8 @@ pub struct SystemMetrics {
 #[derive(Debug, Serialize)]
 pub struct MetricsResponse {
     pub systems: Vec<SystemMetrics>,
+    /// Public beszel base URL for deep-links, or null when not configured.
+    pub beszel_url: Option<String>,
 }
 
 /// Authenticate and return a fresh token, caching it in state.
@@ -119,6 +123,7 @@ pub async fn fetch(state: &AppState) -> AppResult<MetricsResponse> {
         .map_err(|e| AppError::Upstream(format!("beszel systems parse: {e}")))?;
     Ok(MetricsResponse {
         systems: list.items.into_iter().map(normalize_system).collect(),
+        beszel_url: state.cfg.beszel_public_url.clone(),
     })
 }
 
@@ -130,6 +135,7 @@ fn normalize_system(rec: Value) -> SystemMetrics {
             .unwrap_or_default()
     };
     SystemMetrics {
+        id: str_field("id"),
         name: str_field("name"),
         status: str_field("status"),
         host: rec
@@ -155,6 +161,7 @@ mod tests {
             "info": { "cpu": 12.5, "mp": 40.1, "dp": 55.0 }
         });
         let m = normalize_system(rec);
+        assert_eq!(m.id, "abc");
         assert_eq!(m.name, "raspi");
         assert_eq!(m.status, "up");
         assert_eq!(m.host.as_deref(), Some("127.0.0.1"));
