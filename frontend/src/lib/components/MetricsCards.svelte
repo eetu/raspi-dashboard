@@ -112,6 +112,8 @@
 <style>
 	.scroll {
 		overflow-x: auto;
+		border: 1px solid var(--halo-border);
+		border-radius: var(--halo-radius);
 	}
 	table {
 		width: 100%;
@@ -125,7 +127,7 @@
 		font-size: 0.72rem;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-		padding: 0 0.6rem 0.5rem;
+		padding: 0.6rem 0.6rem 0.5rem;
 		white-space: nowrap;
 	}
 	td {
@@ -134,8 +136,14 @@
 		white-space: nowrap;
 		vertical-align: middle;
 	}
-	.sys {
-		padding-left: 0;
+	/* Inset the edge columns from the box border. */
+	th:first-child,
+	td:first-child {
+		padding-left: 0.8rem;
+	}
+	th:last-child,
+	td:last-child {
+		padding-right: 0.8rem;
 	}
 	td.sys {
 		display: flex;
