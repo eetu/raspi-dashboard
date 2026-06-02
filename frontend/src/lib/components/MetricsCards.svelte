@@ -67,6 +67,7 @@
 		{#if res.data.systems.length === 0}
 			<p class="muted">No systems reported.</p>
 		{:else}
+			{@const beszel = res.data.beszel_url}
 			<div class="scroll">
 				<table>
 					<thead>
@@ -78,10 +79,22 @@
 					</thead>
 					<tbody>
 						{#each res.data.systems as sys (sys.name)}
-							<tr>
+							{@const sysUrl =
+								beszel && sys.id ? `${beszel}/system/${encodeURIComponent(sys.id)}` : null}
+							<!-- Whole row clickable for the mouse; the cell's <a> covers keyboard/right-click. -->
+							<tr
+								class:clickable={sysUrl}
+								onclick={() => {
+									if (sysUrl) window.location.href = sysUrl;
+								}}
+							>
 								<td class="sys">
 									<span class="dot" class:up={sys.status === 'up'}></span>
-									<span class="name">{sys.name}</span>
+									{#if sysUrl}
+										<a class="name link" href={sysUrl} rel="external">{sys.name}</a>
+									{:else}
+										<span class="name">{sys.name}</span>
+									{/if}
 								</td>
 								{#each PCT_COLS as col (col.key)}
 									{@const n = pctOf(sys, col.key)}
@@ -160,6 +173,19 @@
 	}
 	.dot.up {
 		background: var(--halo-connected);
+	}
+	tr.clickable {
+		cursor: pointer;
+	}
+	tr.clickable:hover {
+		background: var(--halo-accent-soft);
+	}
+	.link {
+		color: inherit;
+		text-decoration: none;
+	}
+	tr.clickable:hover .link {
+		color: var(--halo-accent);
 	}
 	.num {
 		font-variant-numeric: tabular-nums;

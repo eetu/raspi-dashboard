@@ -27,6 +27,8 @@ export type HealthEntry = {
 export type HealthResponse = { endpoints: HealthEntry[] };
 
 export type SystemMetrics = {
+	// PocketBase record id — beszel's UI keys its /system/{id} route on this.
+	id: string;
 	name: string;
 	status: string;
 	host: string | null;
@@ -35,7 +37,9 @@ export type SystemMetrics = {
 	info: Record<string, unknown> | null;
 };
 
-export type MetricsResponse = { systems: SystemMetrics[] };
+// `beszel_url` is the public beszel base URL for deep-links, or null when the
+// backend has no BESZEL_PUBLIC_URL configured.
+export type MetricsResponse = { systems: SystemMetrics[]; beszel_url: string | null };
 
 export type Vuln = {
 	id: string;

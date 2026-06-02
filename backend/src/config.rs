@@ -22,6 +22,11 @@ pub struct Config {
     pub beszel_url: String,
     pub beszel_user: Option<String>,
     pub beszel_password: Option<String>,
+    /// Public, human-facing beszel base URL (e.g. https://beszel.example.com).
+    /// Surfaced to the SPA so metrics rows can deep-link to a system's beszel
+    /// page (/system/{id}). Distinct from `beszel_url`, which is the loopback
+    /// API the backend reads. Absent → rows render without a link.
+    pub beszel_public_url: Option<String>,
 
     /// trivy hand-off files on the shared `/var/lib/trivy` mount. The scan
     /// report is read; touching the request file triggers a scan via the
@@ -49,6 +54,10 @@ impl Config {
             ),
             beszel_user: env::var("BESZEL_USER").ok().filter(|s| !s.is_empty()),
             beszel_password: env::var("BESZEL_PASSWORD").ok().filter(|s| !s.is_empty()),
+            beszel_public_url: env::var("BESZEL_PUBLIC_URL")
+                .ok()
+                .filter(|s| !s.is_empty())
+                .map(trim_url),
             trivy_scan_file: env::var("TRIVY_SCAN_FILE")
                 .unwrap_or_else(|_| "/var/lib/trivy/last-scan.json".into())
                 .into(),
@@ -100,6 +109,7 @@ mod tests {
             beszel_url: "x".into(),
             beszel_user: None,
             beszel_password: None,
+            beszel_public_url: None,
             trivy_scan_file: "x".into(),
             trivy_scan_request: "x".into(),
             trivy_stale_hours: 96,
