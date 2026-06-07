@@ -1242,8 +1242,8 @@ __metadata:
   linkType: hard
 
 "esrap@npm:^2.2.9":
-  version: 2.2.9
-  resolution: "esrap@npm:2.2.9"
+  version: 2.2.11
+  resolution: "esrap@npm:2.2.11"
   dependencies:
     "@jridgewell/sourcemap-codec": "npm:^1.4.15"
   peerDependencies:
@@ -1251,7 +1251,7 @@ __metadata:
   peerDependenciesMeta:
     "@typescript-eslint/types":
       optional: true
-  checksum: 10/ef6c49afbbab3f8186efff2c134f9e44ec194e6093cfb4f7a59121ace0558441fa5d0fd3f21c77d904d1f19d7c9645ddcff668cf30c3801118c770a35d615443
+  checksum: 10/823f399e7f65fb5cc30926590f67c0c05936b5f75463c73af886912554f99462beed238822a3cc6cb4e8b73d077b579c7746b429ea59b1d8fd213c346b439913
   languageName: node
   linkType: hard
 
@@ -1931,7 +1931,7 @@ __metadata:
     eslint-config: "github:eetu/eslint-config#v2.1.0"
     prettier: "npm:^3.8.3"
     prettier-plugin-svelte: "npm:^3.4.0"
-    svelte: "npm:^5.55.2"
+    svelte: "npm:^5.56.1"
     svelte-check: "npm:^4.4.6"
     typescript: "npm:^6.0.2"
     vite: "npm:^8.0.7"
@@ -2107,9 +2107,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"svelte@npm:^5.55.2":
-  version: 5.56.0
-  resolution: "svelte@npm:5.56.0"
+"svelte@npm:^5.56.1":
+  version: 5.56.1
+  resolution: "svelte@npm:5.56.1"
   dependencies:
     "@jridgewell/remapping": "npm:^2.3.4"
     "@jridgewell/sourcemap-codec": "npm:^1.5.0"
@@ -2127,7 +2127,7 @@ __metadata:
     locate-character: "npm:^3.0.0"
     magic-string: "npm:^0.30.11"
     zimmerframe: "npm:^1.1.2"
-  checksum: 10/869a159ebf5e97ef209246de5b198e50c43fabf289fbee856cd9f21fdf5683ec26d3272b6283ea7ec993e34296ed3f91d2bb890297ce625114605632f7f19ace
+  checksum: 10/96cf751661fec894aa96342bcc0c563905375d7eca558199f812aea751a6681a9bacd48a1882b0edaa2f09052c34569b33ff526e7a08075518fc80858654bd9c
   languageName: node
   linkType: hard
 
