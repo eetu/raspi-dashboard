@@ -19,12 +19,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Detect build-relevant changes
         id: filter
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: dorny/paths-filter@v4
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
         with:
           filters: |
             backend:
@@ -48,17 +48,17 @@ jobs:
 
       - name: Set up QEMU
         if: steps.gate.outputs.backend == 'true'
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4
         with:
           platforms: "arm64"
 
       - name: Set up Docker Buildx
         if: steps.gate.outputs.backend == 'true'
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
       - name: Log in to the Container registry
         if: steps.gate.outputs.backend == 'true'
-        uses: docker/login-action@v4.2.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -67,7 +67,7 @@ jobs:
       - name: Extract metadata for backend image
         id: meta_backend
         if: steps.gate.outputs.backend == 'true'
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}
           tags: |
@@ -78,7 +78,7 @@ jobs:
 
       - name: Build and push backend image
         if: steps.gate.outputs.backend == 'true'
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           target: runner
@@ -96,7 +96,7 @@ jobs:
 
       - name: Prune untagged image versions
         if: steps.gate.outputs.backend == 'true'
-        uses: actions/delete-package-versions@v5
+        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5
         with:
           package-name: raspi-dashboard
           package-type: container
