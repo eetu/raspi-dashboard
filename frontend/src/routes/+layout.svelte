@@ -20,7 +20,6 @@
 <div class="shell">
 	<header class="top">
 		<Wordmark />
-		<span class="tagline">is everything ok, and is anything vulnerable?</span>
 	</header>
 
 	<nav class="tabs">
@@ -48,10 +47,6 @@
 		align-items: baseline;
 		gap: 1rem;
 		flex-wrap: wrap;
-	}
-	.tagline {
-		color: var(--halo-text-muted);
-		font-size: 0.9rem;
 	}
 	.tabs {
 		display: flex;

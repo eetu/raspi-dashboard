@@ -57,7 +57,9 @@ fn inline_script_hashes(html: &str) -> Vec<String> {
     let mut idx = 0;
     while let Some(rel) = html[idx..].find("<script") {
         let tag = idx + rel;
-        let Some(gt) = html[tag..].find('>') else { break };
+        let Some(gt) = html[tag..].find('>') else {
+            break;
+        };
         let open = &html[tag..tag + gt + 1];
         let body_start = tag + gt + 1;
         let Some(close) = html[body_start..].find("</script>") else {
@@ -76,9 +78,10 @@ fn inline_script_hashes(html: &str) -> Vec<String> {
 pub async fn run_server() -> anyhow::Result<()> {
     let _ = dotenvy::dotenv();
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            EnvFilter::new("info,raspi_dashboard_backend=debug")
-        }))
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("info,raspi_dashboard_backend=debug")),
+        )
         .init();
 
     let cfg = Config::from_env()?;
