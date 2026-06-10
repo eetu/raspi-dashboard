@@ -21,6 +21,9 @@
 		<path class="pulse" d="M5 12.5h3l1.8-3.5 2.6 6 1.8-3.2 1.3 1.2H19" />
 	</svg>
 	<span>raspi<span class="accent">dash</span></span>
+	<!-- Pulp Fiction riff, family voice — collapses to the bare wordmark on
+	     narrow screens. See the raspi-design skill. -->
+	<span class="riff">pretty freaking far from ok.</span>
 </span>
 
 <style>
@@ -33,5 +36,15 @@
 	}
 	.pulse {
 		stroke: var(--halo-accent);
+	}
+	.riff {
+		color: var(--halo-text-muted);
+		font-weight: 400;
+		font-size: 0.9rem;
+	}
+	@media (max-width: 520px) {
+		.riff {
+			display: none;
+		}
 	}
 </style>

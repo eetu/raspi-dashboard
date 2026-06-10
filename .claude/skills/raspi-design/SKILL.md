@@ -21,11 +21,12 @@ Matches the family's thin-line glyph style.
 
 Text: **`raspidash`** (one word, lowercase) — `raspi` in `--halo-text-main`,
 `dash` in `--halo-accent` (the `.accent` span). Font: `--halo-font-heading`
-(Space Grotesk). The glyph sits to its left with a `0.5em` gap.
+(Space Grotesk). The glyph sits to its left with a `0.5em` gap. A muted Pulp
+Fiction riff (`.riff`) trails the name and collapses below 520px — see Voice.
 
 ## 3. Layout
 
-`max-width: 880px`, centered. Persistent header (wordmark + tagline) and a tab
+`max-width: 880px`, centered. Persistent header (wordmark, riff baked in) and a tab
 bar live in `+layout.svelte`; tabs are real routes so refresh/deep-link work:
 
 - **Dashboard** (`/`) — service health grid + host/container metrics.
@@ -41,7 +42,10 @@ accent-filled button). Status uses dots: `--halo-connected` (up) /
 
 ## 4. Voice
 
-Terse, operational, lowercase tagline. The page's one line of copy:
-*"is everything ok, and is anything vulnerable?"*. Empty/degraded states are
-plain and factual ("no scan yet — press Scan now", "beszel unavailable"), never
-cute. Numbers over adjectives.
+The wordmark carries a **Pulp Fiction riff**, baked into `Wordmark.svelte` and
+collapsing on narrow screens — same as the family (halo *"i shot marvin in the
+halo."*, chat *"royale with chat."*, scribe *"the path of the righteous
+scribe."*, ocular *"a quiet eye on the ocular."*). raspi's line trails the name:
+*"pretty freaking far from ok."* (Marsellus' answer to "are you ok?").
+Empty/degraded states stay plain and factual ("no scan yet — press Scan now",
+"beszel unavailable"), never cute. Numbers over adjectives.
