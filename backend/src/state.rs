@@ -9,9 +9,11 @@ use crate::config::Config;
 pub struct AppState {
     pub cfg: Arc<Config>,
     pub http: Client,
-    /// Cached beszel (PocketBase) auth token. Minted on first use, reused until
-    /// a 401 forces a re-auth (see [`crate::beszel`]). `None` until the first
-    /// successful login, or always `None` when beszel creds are unset.
+    /// Cached beszel (PocketBase) auth token. Minted on first use and reused
+    /// until it's rejected — either an explicit 401 or a silent guest-downgrade
+    /// that yields an empty `systems` list, both of which force a re-auth (see
+    /// [`crate::beszel`]). `None` until the first successful login, or always
+    /// `None` when beszel creds are unset.
     pub beszel_token: Arc<Mutex<Option<String>>>,
 }
 

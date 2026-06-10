@@ -1,7 +1,8 @@
 //! beszel upstream — beszel embeds PocketBase. We authenticate a dedicated
 //! read-only user (`auth-with-password`), cache the token, and read the
-//! `systems` collection. The token is reused until a request 401s, then
-//! re-minted once.
+//! `systems` collection. The token is reused until it's rejected — either an
+//! explicit 401 or a silent guest-downgrade (PocketBase returns 200 + an empty
+//! list rather than 401 for a stale token), then re-minted once.
 //!
 //! NOTE (verify at deploy): the exact `systems` record shape — especially the
 //! `info` sub-object's keys — is pinned to beszel's PocketBase schema and must
@@ -103,12 +104,41 @@ pub async fn fetch(state: &AppState) -> AppResult<MetricsResponse> {
             "beszel credentials not configured".into(),
         ));
     }
-    let mut tok = token(state).await?;
-    let mut resp = get_records(state, &tok).await?;
+
+    // Attempt with the cached token (minting one if absent).
+    let had_cached = state.beszel_token.lock().await.is_some();
+    let tok = token(state).await?;
+    let mut systems = read_systems(state, &tok).await?;
+
+    // A stale token is NOT rejected with 401 on a PocketBase collection list —
+    // it's silently downgraded to an unauthenticated guest, and beszel's
+    // `systems` list rule (auth required) then returns 200 with an empty set.
+    // So an empty result from a *reused* token is ambiguous: re-auth once and
+    // retry before trusting it. (A token that does 401 is already handled inside
+    // read_systems.) This is what was leaving the dashboard stuck on "No systems
+    // reported." after beszel restarted / the token aged out, until a process
+    // restart cleared the cache. We only retry when the token was cached: a
+    // freshly-minted token returning empty means genuinely zero systems.
+    if systems.is_empty() && had_cached {
+        *state.beszel_token.lock().await = None;
+        let fresh = login(state).await?;
+        systems = read_systems(state, &fresh).await?;
+    }
+
+    Ok(MetricsResponse {
+        systems,
+        beszel_url: state.cfg.beszel_public_url.clone(),
+    })
+}
+
+/// GET the systems collection with `token`, re-authing once on an explicit 401,
+/// and parse the records into normalised rows.
+async fn read_systems(state: &AppState, token: &str) -> AppResult<Vec<SystemMetrics>> {
+    let mut resp = get_records(state, token).await?;
     // One re-auth on 401: the cached token may have expired.
     if resp.status() == reqwest::StatusCode::UNAUTHORIZED {
         *state.beszel_token.lock().await = None;
-        tok = login(state).await?;
+        let tok = login(state).await?;
         resp = get_records(state, &tok).await?;
     }
     if !resp.status().is_success() {
@@ -121,10 +151,7 @@ pub async fn fetch(state: &AppState) -> AppResult<MetricsResponse> {
         .json()
         .await
         .map_err(|e| AppError::Upstream(format!("beszel systems parse: {e}")))?;
-    Ok(MetricsResponse {
-        systems: list.items.into_iter().map(normalize_system).collect(),
-        beszel_url: state.cfg.beszel_public_url.clone(),
-    })
+    Ok(list.items.into_iter().map(normalize_system).collect())
 }
 
 fn normalize_system(rec: Value) -> SystemMetrics {
@@ -150,6 +177,81 @@ fn normalize_system(rec: Value) -> SystemMetrics {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::Config;
+    use wiremock::matchers::{header, method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    fn config_for(beszel_url: String) -> Config {
+        Config {
+            dev_auth: true,
+            bind: "127.0.0.1:0".into(),
+            gatus_url: "http://unused".into(),
+            beszel_url,
+            beszel_user: Some("ro".into()),
+            beszel_password: Some("ro-pass".into()),
+            beszel_public_url: None,
+            trivy_scan_file: "x".into(),
+            trivy_scan_request: "x".into(),
+            trivy_stale_hours: 96,
+            static_dir: "x".into(),
+        }
+    }
+
+    fn systems_body(items: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({ "page": 1, "perPage": 200, "totalItems": 0, "items": items })
+    }
+
+    // Regression: a stale cached token isn't 401'd by PocketBase — the systems
+    // list silently comes back empty (guest-downgraded). fetch() must re-auth on
+    // that empty-from-cached case, not surface "No systems reported.". Here the
+    // stale token returns [] and only a fresh login unlocks the real row.
+    #[tokio::test]
+    async fn empty_from_stale_cached_token_triggers_reauth() {
+        let beszel = MockServer::start().await;
+
+        // Login mints a *fresh* token.
+        Mock::given(method("POST"))
+            .and(path("/api/collections/users/auth-with-password"))
+            .respond_with(
+                ResponseTemplate::new(200).set_body_json(serde_json::json!({ "token": "fresh" })),
+            )
+            .mount(&beszel)
+            .await;
+
+        // The stale token is silently downgraded → empty list, HTTP 200.
+        Mock::given(method("GET"))
+            .and(path("/api/collections/systems/records"))
+            .and(header("authorization", "Bearer stale"))
+            .respond_with(
+                ResponseTemplate::new(200).set_body_json(systems_body(serde_json::json!([]))),
+            )
+            .mount(&beszel)
+            .await;
+
+        // The fresh token sees the real systems.
+        Mock::given(method("GET"))
+            .and(path("/api/collections/systems/records"))
+            .and(header("authorization", "Bearer fresh"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(systems_body(
+                serde_json::json!([{ "id": "s1", "name": "raspi", "status": "up" }]),
+            )))
+            .mount(&beszel)
+            .await;
+
+        let state = AppState::new(config_for(beszel.uri()), reqwest::Client::new());
+        // Seed a token that was valid before but no longer is.
+        *state.beszel_token.lock().await = Some("stale".into());
+
+        let resp = fetch(&state).await.expect("fetch");
+        assert_eq!(
+            resp.systems.len(),
+            1,
+            "should re-auth past the empty result"
+        );
+        assert_eq!(resp.systems[0].name, "raspi");
+        // Cache now holds the re-minted token.
+        assert_eq!(state.beszel_token.lock().await.as_deref(), Some("fresh"));
+    }
 
     #[test]
     fn normalizes_a_systems_record_passing_info_through() {
