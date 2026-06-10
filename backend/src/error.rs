@@ -45,7 +45,10 @@ impl IntoResponse for AppError {
         }));
         if status.is_server_error() {
             tracing::error!(?self, "request failed");
-        } else if matches!(self, AppError::Upstream(_) | AppError::ServiceUnavailable(_)) {
+        } else if matches!(
+            self,
+            AppError::Upstream(_) | AppError::ServiceUnavailable(_)
+        ) {
             tracing::warn!(?self, "request degraded");
         }
         (status, body).into_response()

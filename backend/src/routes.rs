@@ -27,7 +27,10 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
-async fn serve_spa(State(state): State<AppState>, uri: axum::http::Uri) -> axum::response::Response {
+async fn serve_spa(
+    State(state): State<AppState>,
+    uri: axum::http::Uri,
+) -> axum::response::Response {
     use axum::http::header::CONTENT_TYPE;
     use axum::response::{Html, IntoResponse};
 
