@@ -510,9 +510,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sveltejs/kit@npm:^2.65.1":
-  version: 2.65.1
-  resolution: "@sveltejs/kit@npm:2.65.1"
+"@sveltejs/kit@npm:^2.66.0":
+  version: 2.66.0
+  resolution: "@sveltejs/kit@npm:2.66.0"
   dependencies:
     "@standard-schema/spec": "npm:^1.0.0"
     "@sveltejs/acorn-typescript": "npm:^1.0.9"
@@ -539,7 +539,7 @@ __metadata:
       optional: true
   bin:
     svelte-kit: svelte-kit.js
-  checksum: 10/c01b6f91118c31ee1310c56ab7dd46c15218830ea82245cb240bf9620849ffa2360ac326a3a0febd7574a3da2e17a115035adda57458dac290bdd2c5f5989c3b
+  checksum: 10/3b9cddced1e336c67fe69241691b52ce92a994cc0cb95657bbb769fb566df63cf650315a3a61151e23effce7efb52362d55cfb4595659b50c2b3b68ab4f1aad4
   languageName: node
   linkType: hard
 
@@ -1939,7 +1939,7 @@ __metadata:
   dependencies:
     "@anarkisti/eslint-config": "npm:^1.1.0"
     "@sveltejs/adapter-static": "npm:^3.0.10"
-    "@sveltejs/kit": "npm:^2.65.1"
+    "@sveltejs/kit": "npm:^2.66.0"
     "@sveltejs/vite-plugin-svelte": "npm:^7.0.0"
     "@types/node": "npm:^25"
     eslint: "npm:^10.5.0"
