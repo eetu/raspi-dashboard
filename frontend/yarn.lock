@@ -563,9 +563,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sveltejs/vite-plugin-svelte@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "@sveltejs/vite-plugin-svelte@npm:7.3.0"
+"@sveltejs/vite-plugin-svelte@npm:^7.3.1":
+  version: 7.3.1
+  resolution: "@sveltejs/vite-plugin-svelte@npm:7.3.1"
   dependencies:
     deepmerge: "npm:^4.3.1"
     magic-string: "npm:^1.0.0"
@@ -574,7 +574,7 @@ __metadata:
   peerDependencies:
     svelte: ^5.46.4
     vite: ^8.0.0-beta.7 || ^8.0.0
-  checksum: 10/48e91c777229f4ebf67870940895a1d9cf9c55fd4efc328167983949b6d48e5cfce93fda53e9c777377d81c32272392cc66715d565036a3d1a826f570b6edeab
+  checksum: 10/61519823c4d3737b8bb74e5e50cb4bb219fbd11a2f11795aed711754c764840d244a557571d4c7fa0a8e02241fdbe46b40f5c4929ea8737361802b3a6072b3db
   languageName: node
   linkType: hard
 
@@ -607,11 +607,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^26":
-  version: 26.6.2
-  resolution: "@types/node@npm:26.6.2"
+  version: 26.6.3
+  resolution: "@types/node@npm:26.6.3"
   dependencies:
     undici-types: "npm:~8.9.0"
-  checksum: 10/757d598381b690e4429b9fab3adcf48f88ac7ed17488b47724cf3df9d6d38bcac17ab61c10cabecc5dbda5717f3f819208549ba3cef4cd941300440282a2a1a8
+  checksum: 10/278d5241522520fbadd46b41065d7587bbb214adb3c6f8a2a9a28754d374c578d090f7387866d09c79be1e9bbf5adc7eeea453032a52f77e70b06077f85c5c14
   languageName: node
   linkType: hard
 
@@ -2142,12 +2142,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.9.8":
-  version: 3.9.8
-  resolution: "prettier@npm:3.9.8"
+"prettier@npm:^3.9.9":
+  version: 3.9.9
+  resolution: "prettier@npm:3.9.9"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10/4ac262aaf9a5e221b02cc17447ebe7aa9689be59b85ab9de8152cd7422fb363ed3e09da6df585fa19ab1fc6cffebdc3ea34db1a75c978536aeba3f87bfd06ab3
+  checksum: 10/3d11a8095a7db50f0fbc8086ad96be676401154b63a2e9023e1274893457dccab19a9c211f4fb2cae7244e800bea2d5185d9bb6fc510f48a53017815e47d4e6d
   languageName: node
   linkType: hard
 
@@ -2181,10 +2181,10 @@ __metadata:
     "@anarkisti/eslint-config": "npm:^1.1.0"
     "@sveltejs/adapter-static": "npm:^3.0.10"
     "@sveltejs/kit": "npm:^2.70.3"
-    "@sveltejs/vite-plugin-svelte": "npm:^7.3.0"
+    "@sveltejs/vite-plugin-svelte": "npm:^7.3.1"
     "@types/node": "npm:^26"
     eslint: "npm:^10.11.0"
-    prettier: "npm:^3.9.8"
+    prettier: "npm:^3.9.9"
     prettier-plugin-svelte: "npm:^4.1.1"
     svelte: "npm:^5.57.1"
     svelte-check: "npm:^4.7.6"
